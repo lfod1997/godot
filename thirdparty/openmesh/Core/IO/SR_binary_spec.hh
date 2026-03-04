@@ -73,6 +73,9 @@
 
 #include <iostream>
 
+// -------------------- Godot
+#include "core/error/error_macros.h"
+
 //== NAMESPACES ===============================================================
 
 namespace OpenMesh {
@@ -246,7 +249,7 @@ template <> struct binary< std::string > {
       _os.write( _v.data(), len );
       return _os.good() ? len+bytes : 0;
     }
-    throw std::runtime_error("Cannot store string longer than 64Kb");
+    ERR_FAIL_V_MSG(0L, "Cannot store string longer than 64Kb");
   }
 
   static

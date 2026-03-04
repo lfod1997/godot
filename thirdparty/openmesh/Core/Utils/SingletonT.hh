@@ -58,6 +58,9 @@
 // STL
 #include <stdexcept>
 
+// Godot
+#include "core/error/error_macros.h"
+
 
 //== NAMESPACES ===============================================================
 
@@ -88,16 +91,10 @@ public:
     if (!pInstance__)
     {
       // check if singleton alive
-      if (destroyed__)
-      {
-	OnDeadReference();
-      }
+      CRASH_COND_MSG(destroyed__, "[Singelton error] - Dead reference detected!");
       // first time request -> initialize
-      else
-      {
-	Create();
-      }
-    }
+      Create();
+	}
     return *pInstance__;
   }
 
@@ -114,12 +111,6 @@ private:
   {
     static T theInstance;
     pInstance__ = &theInstance;
-  }
-
-  // Will be called if instance is accessed after its lifetime has expired
-  static void OnDeadReference()
-  {
-    throw std::runtime_error("[Singelton error] - Dead reference detected!\n");
   }
 
   virtual ~SingletonT()

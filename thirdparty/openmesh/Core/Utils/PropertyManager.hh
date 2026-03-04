@@ -48,6 +48,9 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+// -------------------- Godot
+#include "core/error/error_macros.h"
+#include "core/variant/variant.h"
 
 namespace OpenMesh {
 
@@ -159,11 +162,10 @@ class PropertyManager {
         OM_DEPRECATED("Use the constructor without parameter 'existing' instead. Check for existance with hasProperty") // As long as this overload exists, initial value must be first parameter due to ambiguity for properties of type bool
         PropertyManager(PolyConnectivity& mesh, const char *propname, bool existing) : mesh_(mesh), retain_(existing), name_(propname) {
             if (existing) {
-                if (!PropertyManager::mesh().get_property_handle(prop_, propname)) {
-                    std::ostringstream oss;
-                    oss << "Requested property handle \"" << propname << "\" does not exist.";
-                    throw std::runtime_error(oss.str());
-                }
+                ERR_FAIL_COND_MSG(
+                	(!PropertyManager::mesh().get_property_handle(prop_, propname)),
+            		vformat("Requested property handle \"%s\" does not exist.", propname)
+            	);
             } else {
                 PropertyManager::mesh().add_property(prop_, propname);
             }
@@ -773,12 +775,11 @@ hasProperty(const PolyConnectivity &mesh, const char *propname) {
 template<typename ElementT, typename T>
 PropertyManager<typename HandleToPropHandle<ElementT, T>::type>
 getProperty(PolyConnectivity &mesh, const char *propname) {
-  if (!hasProperty<ElementT, T>(mesh, propname))
-  {
-    std::ostringstream oss;
-    oss << "Requested property handle \"" << propname << "\" does not exist.";
-    throw std::runtime_error(oss.str());
-  }
+  ERR_FAIL_COND_V_MSG(
+    (!hasProperty<ElementT, T>(mesh, propname)),
+    nullptr,
+    vformat("Requested property handle \"%s\" does not exist.", propname)
+  );
   return PropertyManager<typename HandleToPropHandle<ElementT, T>::type>(mesh, propname);
 }
 

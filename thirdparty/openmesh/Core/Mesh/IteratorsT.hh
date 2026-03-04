@@ -57,7 +57,8 @@
 #include <cassert>
 #include <cstddef>
 #include <iterator>
-
+// -------------------- Godot
+#include "core/error/error_macros.h"
 
 //== NAMESPACES ===============================================================
 
@@ -169,9 +170,8 @@ class GenericIteratorT {
                 GenericIteratorT&>::type {
             static_assert(std::is_same<T, value_handle>::value,
                     "Template parameter must not deviate from default.");
-            if (skip_bits_)
-                throw std::logic_error("Skipping iterators do not support "
-                        "random access.");
+        	ERR_FAIL_COND_V_MSG(skip_bits_, *this, "Skipping iterators do not support "
+					"random access.");
             hnd_.__increment(amount);
             return *this;
         }
@@ -183,9 +183,8 @@ class GenericIteratorT {
                 GenericIteratorT>::type {
             static_assert(std::is_same<T, value_handle>::value,
                     "Template parameter must not deviate from default.");
-            if (skip_bits_)
-                throw std::logic_error("Skipping iterators do not support "
-                        "random access.");
+            ERR_FAIL_COND_V_MSG(skip_bits_, *this, "Skipping iterators do not support "
+                    "random access.");
             GenericIteratorT result = *this;
             result.hnd_.__increment(rhs);
             return result;

@@ -61,7 +61,9 @@
 #include <sstream>
 #include <numeric>   // accumulate
 // -------------------- OpenMesh
-
+// -------------------- Godot
+#include "core/error/error_macros.h"
+#include "core/variant/variant.h"
 
 //== NAMESPACES ===============================================================
 
@@ -115,9 +117,7 @@ template < typename T, typename = void > struct binary
                 bool /* _swap */ = false ,
                 bool /* store_size */ = true ) // for vectors
   {
-      std::ostringstream msg;
-      msg << "Type not supported: " << typeid(value_type).name();
-      throw std::logic_error(msg.str());
+      ERR_FAIL_V_MSG(0L, vformat("Type not supported: %s", typeid(value_type).name()));
   }
 
   /// Restore a value of T and return the number of bytes read
@@ -127,9 +127,7 @@ template < typename T, typename = void > struct binary
                   bool /* _swap */ = false ,
                   bool /* store_size */ = true ) // for vectors
   {
-      std::ostringstream msg;
-      msg << "Type not supported: " << typeid(value_type).name();
-      throw std::logic_error(msg.str());
+      ERR_FAIL_V_MSG(0L, vformat("Type not supported: %s", typeid(value_type).name()));
   }
 };
 
