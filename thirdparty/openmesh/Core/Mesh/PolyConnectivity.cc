@@ -42,7 +42,11 @@
 
 
 //== IMPLEMENTATION ==========================================================
+// OpenMesh
 #include "Core/Mesh/PolyConnectivity.hh"
+// Godot
+#include "core/error/error_macros.h"
+// STL
 #include <set>
 
 namespace OpenMesh {
@@ -139,11 +143,7 @@ PolyConnectivity::add_face(const VertexHandle* _vertex_handles, size_t _vhs_size
   // test for topological errors
   for (i=0, ii=1; i<n; ++i, ++ii, ii%=n)
   {
-    if ( !is_boundary(_vertex_handles[i]) )
-    {
-      omerr() << "PolyMeshT::add_face: complex vertex\n";
-      return make_smart(InvalidFaceHandle, this);
-    }
+    ERR_FAIL_COND_V_MSG(!is_boundary(_vertex_handles[i]), make_smart(InvalidFaceHandle, this), "PolyMeshT::add_face: complex vertex");
 
     // Initialise edge attributes
     edgeData_[i].halfedge_handle = find_halfedge(_vertex_handles[i],
@@ -151,11 +151,7 @@ PolyConnectivity::add_face(const VertexHandle* _vertex_handles, size_t _vhs_size
     edgeData_[i].is_new = !edgeData_[i].halfedge_handle.is_valid();
     edgeData_[i].needs_adjust = false;
 
-    if (!edgeData_[i].is_new && !is_boundary(edgeData_[i].halfedge_handle))
-    {
-      omerr() << "PolyMeshT::add_face: complex edge\n";
-      return make_smart(InvalidFaceHandle, this);
-    }
+    ERR_FAIL_COND_V_MSG(!edgeData_[i].is_new && !is_boundary(edgeData_[i].halfedge_handle), make_smart(InvalidFaceHandle, this), "PolyMeshT::add_face: complex edge");
   }
 
   // re-link patches if necessary
@@ -183,11 +179,7 @@ PolyConnectivity::add_face(const VertexHandle* _vertex_handles, size_t _vhs_size
         boundary_next = next_halfedge_handle(boundary_prev);
 
         // ok ?
-        if (boundary_prev == inner_prev)
-        {
-          omerr() << "PolyMeshT::add_face: patch re-linking failed\n";
-          return make_smart(InvalidFaceHandle, this);
-        }
+        ERR_FAIL_COND_V_MSG(boundary_prev == inner_prev, make_smart(InvalidFaceHandle, this), "PolyMeshT::add_face: patch re-linking failed");
 
         assert(is_boundary(boundary_prev));
         assert(is_boundary(boundary_next));
