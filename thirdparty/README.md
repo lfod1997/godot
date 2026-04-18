@@ -818,6 +818,34 @@ Files extracted from the upstream source:
 - `LICENSE.txt`
 
 
+## openmesh
+
+- Upstream: https://gitlab.vci.rwth-aachen.de:9000/OpenMesh/OpenMesh.git
+- Version: 11.0 (f13a3bf79f8dc91cd453b74baa9dc6f97a5a3062, 2024)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `LICENSE`
+- `src/OpenMesh/Core/` as `Core/`
+	- Removed `Core/Geometry/EigenVectorT.hh` (unused)
+	- Removed `Core/Geometry/Plane3d.hh` (unused)
+	- Removed `Core/System/OpenMeshDLLMacros.hh` and usages
+	- Removed `Core/Templates/` (unused)
+- `src/OpenMesh/Tools/` as `Tools/`
+    - Removed `Tools/Utils/conio.hh` and `Tools/Utils/conio.cc` (unused)
+    - Removed `Tools/Utils/getopt.hh` and `Tools/Utils/getopt.cc` (unused)
+    - Removed `Tools/Utils/GLConstAsString.hh` (unused)
+    - Removed `Tools/Utils/Gnuplot.hh` and `Tools/Utils/Gnuplot.cc` (unused)
+	- Removed `Tools/Utils/NumLimitsT.hh` and usages
+    - Removed `Tools/Utils/TestingFramework.hh` (unused)
+    - Removed `Tools/Utils/Timer.hh` and `Tools/Utils/Timer.cc` (unused)
+    - Removed `Tools/VDPM/` (unused)
+- Redirected all header paths, steps:
+	1. Replace matches of `#( *)include( *)"([^./].*)"` with `#$1include$2"./$3"`
+	2. Replace matches of `#( *)include( *)<OpenMesh/(.*)>` with `#$1include$2"$3"`
+
+
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK

@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_openmesh = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+thirdparty_dir = "#thirdparty/openmesh/"
+thirdparty_sources = [
+    #TODO
+]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+env_openmesh.Prepend(CPPPATH=[thirdparty_dir])
+
+env_thirdparty = env_openmesh.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
+
+# Godot source files
+
+module_obj = []
+
+env_openmesh.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)
