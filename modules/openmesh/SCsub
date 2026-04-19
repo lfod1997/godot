@@ -12,7 +12,11 @@ thirdparty_obj = []
 
 thirdparty_dir = "#thirdparty/openmesh/"
 thirdparty_sources = [
-    #TODO
+    "Core/Mesh/ArrayKernel.cc",
+    "Core/Mesh/BaseKernel.cc",
+    "Core/Mesh/PolyConnectivity.cc",
+    "Core/Mesh/TriConnectivity.cc",
+    "Core/Utils/BaseProperty.cc",
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
