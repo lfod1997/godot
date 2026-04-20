@@ -149,62 +149,81 @@ void ImmediateMesh::surface_end() {
 	ERR_FAIL_COND_MSG(!surface_active, "Not creating any surface. Use surface_begin() to do it.");
 	ERR_FAIL_COND_MSG(vertices.is_empty(), "No vertices were added, surface can't be created.");
 
+	// VERTEX (POSITION) SPAN OF THE VERTEX REGION
+	// I have position! + Specify the mesh version (we are at Godot's internal mesh version 2)
 	uint64_t format = ARRAY_FORMAT_VERTEX | ARRAY_FLAG_FORMAT_CURRENT_VERSION;
-
+	// Determine the position stride later (3 floats for 3D, 2 floats for 2D)
 	uint32_t vertex_stride = 0;
 	if (active_surface_data.vertex_2d) {
+		// I'm using 2D vertices (the special case)!
 		format |= ARRAY_FLAG_USE_2D_VERTICES;
 		vertex_stride = sizeof(float) * 2;
 	} else {
 		vertex_stride = sizeof(float) * 3;
 	}
+
+	// NORMAL-TANGENT SPAN OF THE VERTEX REGION
 	uint32_t normal_tangent_stride = 0;
 	uint32_t normal_offset = 0;
 	if (uses_normals) {
+		// I have normals!
 		format |= ARRAY_FORMAT_NORMAL;
+		// Normal-tangent span comes after the vertex span
 		normal_offset = vertex_stride * vertices.size();
+		// Normals are octahedron-encoded & compressed to 2-dimensional 16-bit fixed points, thus 4 byte each, add to the stride
 		normal_tangent_stride += sizeof(uint32_t);
 	}
 	uint32_t tangent_offset = 0;
 	if (uses_tangents || uses_normals) {
+		// I have tangents!
 		format |= ARRAY_FORMAT_TANGENT;
+		// The 1st tangent is located at normal-tangent span, after the first normal
 		tangent_offset = vertex_stride * vertices.size() + normal_tangent_stride;
+		// Tangents are octahedron-encoded & compressed to 2-dimensional 16-bit fixed points, thus 4 byte each, add to the stride
 		normal_tangent_stride += sizeof(uint32_t);
 	}
 
 	AABB aabb;
 
+	// Write vertex buffer, calculating AABB in the meantime
 	{
 		surface_vertex_create_cache.resize((vertex_stride + normal_tangent_stride) * vertices.size());
 		uint8_t *surface_vertex_ptr = surface_vertex_create_cache.ptrw();
 		for (uint32_t i = 0; i < vertices.size(); i++) {
+			// Write vertex position
 			{
+				// Write 2 or 3 floats
 				float *vtx = (float *)&surface_vertex_ptr[i * vertex_stride];
 				vtx[0] = vertices[i].x;
 				vtx[1] = vertices[i].y;
 				if (!active_surface_data.vertex_2d) {
 					vtx[2] = vertices[i].z;
 				}
+				// Update AABB to enclose the vertex
 				if (i == 0) {
 					aabb = AABB(vertices[i], SMALL_VEC3); // Must have a bit of size.
 				} else {
 					aabb.expand_to(vertices[i]);
 				}
 			}
+			// Compress & write normal
 			if (uses_normals) {
 				uint32_t *normal = (uint32_t *)&surface_vertex_ptr[i * normal_tangent_stride + normal_offset];
 
 				Vector2 n = normals[i].octahedron_encode();
 
+				// Convert to 16-bit fixed point representation
 				uint32_t value = 0;
 				value |= (uint16_t)CLAMP(n.x * 65535, 0, 65535);
 				value |= (uint16_t)CLAMP(n.y * 65535, 0, 65535) << 16;
 
 				*normal = value;
 			}
+			// Compress & write tangent
 			if (uses_tangents || uses_normals) {
 				uint32_t *tangent = (uint32_t *)&surface_vertex_ptr[i * normal_tangent_stride + tangent_offset];
 				Vector2 t;
+				// If tangent is readily provided, use it; otherwise, compute it
 				if (uses_tangents) {
 					t = tangents[i].normal.octahedron_tangent_encode(tangents[i].d);
 				} else {
@@ -212,6 +231,7 @@ void ImmediateMesh::surface_end() {
 					t = tan.octahedron_tangent_encode(1.0);
 				}
 
+				// Convert to 16-bit fixed point representation
 				uint32_t value = 0;
 				value |= (uint16_t)CLAMP(t.x * 65535, 0, 65535);
 				value |= (uint16_t)CLAMP(t.y * 65535, 0, 65535) << 16;
@@ -226,23 +246,32 @@ void ImmediateMesh::surface_end() {
 		}
 	}
 
+	// ATTRIBUTE REGION
 	if (uses_colors || uses_uvs || uses_uv2s) {
 		uint32_t attribute_stride = 0;
 
 		if (uses_colors) {
+			// I have color!
 			format |= ARRAY_FORMAT_COLOR;
+			// Color is 4-Byte each (RGBA8), add to the attribute stride
 			attribute_stride += sizeof(uint8_t) * 4;
 		}
 		uint32_t uv_offset = 0;
 		if (uses_uvs) {
+			// I have UV1!
 			format |= ARRAY_FORMAT_TEX_UV;
+			// UV1 comes after color
 			uv_offset = attribute_stride;
+			// UV1 is 2-float each, add to the attribute stride
 			attribute_stride += sizeof(float) * 2;
 		}
 		uint32_t uv2_offset = 0;
 		if (uses_uv2s) {
+			// I have UV2!
 			format |= ARRAY_FORMAT_TEX_UV2;
+			// UV2 comes after UV1
 			uv2_offset = attribute_stride;
+			// UV2 is 2-float each, add to the attribute stride
 			attribute_stride += sizeof(float) * 2;
 		}
 
@@ -250,6 +279,7 @@ void ImmediateMesh::surface_end() {
 
 		uint8_t *surface_attribute_ptr = surface_attribute_create_cache.ptrw();
 
+		// Write attribute buffer
 		for (uint32_t i = 0; i < vertices.size(); i++) {
 			if (uses_colors) {
 				uint8_t *color8 = (uint8_t *)&surface_attribute_ptr[i * attribute_stride];
@@ -275,8 +305,9 @@ void ImmediateMesh::surface_end() {
 		}
 	}
 
+	// Create new SurfaceData
 	RS::SurfaceData sd;
-
+	// Fill in the form
 	sd.primitive = RS::PrimitiveType(active_surface_data.primitive);
 	sd.format = format;
 	sd.vertex_data = surface_vertex_create_cache;
@@ -288,16 +319,16 @@ void ImmediateMesh::surface_end() {
 	if (active_surface_data.material.is_valid()) {
 		sd.material = active_surface_data.material->get_rid();
 	}
-
+	// Send to RS
 	RS::get_singleton()->mesh_add_surface(mesh, sd);
-
+	// Internal state update
 	active_surface_data.aabb = aabb;
 
 	active_surface_data.format = format;
 	active_surface_data.array_len = vertices.size();
 
 	surfaces.push_back(active_surface_data);
-
+	// Reset
 	colors.clear();
 	normals.clear();
 	tangents.clear();
