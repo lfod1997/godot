@@ -56,7 +56,6 @@
 
 
 #include "Core/Mesh/TriMeshT.hh"
-#include "Core/System/omstream.hh"
 #include <vector>
 
 

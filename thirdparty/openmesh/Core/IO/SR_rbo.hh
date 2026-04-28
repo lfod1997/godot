@@ -64,9 +64,11 @@
 #include <algorithm>
 #include <typeinfo>
 // -------------------- OpenMesh
-#include "Core/System/omstream.hh"
 #include "Core/IO/SR_types.hh"
 #include "Core/Utils/GenProg.hh"
+// -------------------- Godot
+#include "core/error/error_macros.h"
+#include "core/variant/variant.h"
 
 //== NAMESPACES ===============================================================
 
@@ -153,19 +155,11 @@ template <typename T> inline T* reverse_byte_order(T* t);
 // custom data types.
 
 
-inline void compile_time_error__no_fundamental_type()
-{
-  // we should never reach this point
-  assert(false);
-}
-
 // default action for byte reversal: cause an error to avoid
 // surprising behaviour!
 template <typename T> T& reverse_byte_order(  T& _t )
 {
-  omerr() << "Not defined for type " << typeid(T).name() << std::endl;
-  compile_time_error__no_fundamental_type();
-  return _t;
+  ERR_FAIL_V_MSG(_t, vformat("Not defined for type %s", typeid(T).name()));
 }
 
 template <> inline bool&  reverse_byte_order(bool & _t) { return _t; }

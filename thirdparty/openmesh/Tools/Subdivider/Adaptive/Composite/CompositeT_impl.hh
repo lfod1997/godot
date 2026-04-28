@@ -55,10 +55,11 @@
 //== INCLUDES =================================================================
 
 #include "Core/System/config.hh"
-#include "Core/System/omstream.hh"
 #include <ostream>
 #include "Tools/Subdivider/Adaptive/Composite/CompositeT.hh"
 #include "Tools/Subdivider/Adaptive/Composite/RuleInterfaceT.hh"
+// Godot
+#include "core/string/print_string.h"
 
 
 //== NAMESPACE ================================================================
@@ -129,7 +130,7 @@ initialize( void )
 
   if (n_subdiv_rules_ != 1)
   {
-    ::omerr() << "Error! More than one subdivision rules not allowed!\n";
+    print_error("Error! More than one subdivision rules not allowed!");
     return false;
   }
 
@@ -138,7 +139,7 @@ initialize( void )
 
   if (subdiv_type_ != 3 && subdiv_type_ != 4)
   {
-    ::omerr() << "Error! Unknown subdivision type in sequence!" << std::endl;
+    print_error("Error! Unknown subdivision type in sequence!");
     return false;
   }
 

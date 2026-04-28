@@ -73,10 +73,11 @@
 
 #include "./Config.hh"
 #include <vector>
-#include "Core/System/omstream.hh"
 #if (defined(_MSC_VER) && (_MSC_VER >= 1800)) || __cplusplus > 199711L || defined(__GXX_EXPERIMENTAL_CXX0X__)
 #include <utility>
 #endif
+// Godot
+#include "core/string/print_string.h"
 
 //== NAMESPACE ================================================================
 
@@ -263,12 +264,12 @@ public:
       unsigned int j;
       if (((j=left(i))<size()) && interface_.greater(entry(i), entry(j)))
       {
-        omerr() << "Heap condition violated\n";
+        print_error("Heap condition violated");
         ok=false;
       }
       if (((j=right(i))<size()) && interface_.greater(entry(i), entry(j)))
       {
-        omerr() << "Heap condition violated\n";
+        print_error("Heap condition violated");
         ok=false;
       }
     }

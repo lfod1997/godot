@@ -59,7 +59,6 @@
 #include "Core/Utils/GenProg.hh"
 #include "Core/Utils/vector_cast.hh"
 #include "Core/Utils/vector_traits.hh"
-#include "Core/System/omstream.hh"
 #include <vector>
 
 

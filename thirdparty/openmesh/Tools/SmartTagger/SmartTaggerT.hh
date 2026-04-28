@@ -46,7 +46,6 @@
 
 // OpenMesh
 #include "Core/Utils/Property.hh"
-#include "Core/System/omstream.hh"
 
 
 //== DEFINES ==================================================================

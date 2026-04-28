@@ -45,9 +45,7 @@
 #define OPENMESH_BASEPROPERTY_HH
 
 #include <string>
-// OpenMesh
-#include "Core/IO/StoreRestore.hh"
-#include "Core/System/omstream.hh"
+#include <ostream>
 // Godot
 #include "core/error/error_macros.h"
 
@@ -175,11 +173,7 @@ protected:
   template < typename T >
   void check_and_set_persistent( bool _yn )
   {
-    if ( _yn && !IO::is_streamable<T>() )
-    {
-      ERR_PRINT("Type of property value is not binary storable.");
-    }
-    persistent_ = IO::is_streamable<T>() && _yn;
+    ERR_FAIL_MSG("Mesh IO is disabled");
   }
 
 private:

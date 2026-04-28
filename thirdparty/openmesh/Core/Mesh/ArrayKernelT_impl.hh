@@ -43,7 +43,13 @@
 
 //== INCLUDES =================================================================
 
+// OpenMesh
 #include "Core/Mesh/ArrayKernel.hh"
+// STL
+#include <vector>
+#include <map>
+// Godot
+#include "core/string/print_string.h"
 
 //== NAMESPACES ===============================================================
 
@@ -64,11 +70,11 @@ void ArrayKernel::garbage_collection(std_API_Container_VHandlePointer& vh_to_upd
 #ifdef DEBUG
   #ifndef OM_GARBAGE_NO_STATUS_WARNING
     if ( !this->has_vertex_status() )
-      omerr() << "garbage_collection: No vertex status available. You can request it: mesh.request_vertex_status() or define OM_GARBAGE_NO_STATUS_WARNING to silence this warning." << std::endl;
+      print_error("garbage_collection: No vertex status available. You can request it: mesh.request_vertex_status() or define OM_GARBAGE_NO_STATUS_WARNING to silence this warning.");
     if ( !this->has_edge_status() )
-      omerr() << "garbage_collection: No edge status available. You can request it: mesh.request_edge_status() or define OM_GARBAGE_NO_STATUS_WARNING to silence this warning." << std::endl;
+      print_error("garbage_collection: No edge status available. You can request it: mesh.request_edge_status() or define OM_GARBAGE_NO_STATUS_WARNING to silence this warning.");
     if ( !this->has_face_status() )
-      omerr() << "garbage_collection: No face status available. You can request it: mesh.request_face_status() or define OM_GARBAGE_NO_STATUS_WARNING to silence this warning." << std::endl;
+      print_error("garbage_collection: No face status available. You can request it: mesh.request_face_status() or define OM_GARBAGE_NO_STATUS_WARNING to silence this warning.");
   #endif
 #endif
 

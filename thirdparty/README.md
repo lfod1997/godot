@@ -831,7 +831,9 @@ Files extracted from upstream source:
 	- Removed `Core/Geometry/EigenVectorT.hh` (unused)
 	- Removed `Core/Geometry/Plane3d.hh` (unused)
 	- Removed `Core/System/OpenMeshDLLMacros.hh` and usages
+    - Removed `Core/System/*stream.*` and usages
 	- Removed `Core/Templates/` (unused)
+    - Removed most of `Core/IO/` and usages, keeping `Core/IO/SR_*` and `Core/IO/StoreRestore.hh`
 - `src/OpenMesh/Tools/` as `Tools/`
     - Removed `Tools/Utils/conio.hh` and `Tools/Utils/conio.cc` (unused)
     - Removed `Tools/Utils/getopt.hh` and `Tools/Utils/getopt.cc` (unused)

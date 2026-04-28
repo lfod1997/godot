@@ -50,7 +50,6 @@
 
 
 #include "Core/System/config.h"
-#include "Core/System/omstream.hh"
 #include "Core/Utils/GenProg.hh"
 #include "Core/Mesh/Attributes.hh"
 #include <ostream>
