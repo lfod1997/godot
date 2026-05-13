@@ -30,17 +30,7 @@
 		else { return real_t(*this) op real_t(p_rhs); } \
 	}
 
-#define OMG_ENCODED_NORMAL_CAST_ASN_OP_IMPL(op) \
-	EncodedNormal& EncodedNormal::operator op (const EncodedNormal &p_rhs) { \
-		return operator op (p_rhs.get_normal()); \
-	}
-
-#define OMG_ENCODED_NORMAL_CAST_MATH_OP_IMPL(op) \
-	EncodedNormal EncodedNormal::operator op (const EncodedNormal &p_rhs) const { \
-		return operator op (p_rhs.get_normal()); \
-	}
-
-/// Octahedron-encoded normal-and-tangent vector type, each component is 16-bit fixed precision, sizeof: 8 Bytes.
+/// Octahedron-encoded, normalized, normal-and-tangent vector type. Each component is 16-bit fixed precision, sizeof: 8 Bytes.
 struct [[nodiscard]] EncodedNormal {
 	class [[nodiscard]] AxisWriteProxy {
 		friend struct EncodedNormal;
@@ -95,8 +85,8 @@ struct [[nodiscard]] EncodedNormal {
 		set_tangent_only(p_tan, p_tan_dir);
 	}
 
-	// This is a "widening" conversion so can be implicit.
-	// ReSharper disable once CppNonExplicitConvertingConstructor
+	// This is a "narrowing" conversion (normalization is enforced upon decoding) so ideally should not be explicit.
+	// But in order to drop-in replace raw vector types it needs to be implicit so we choose to error at unnormalized "p_norm".
 	_FORCE_INLINE_ EncodedNormal(const Vector3 &p_norm) :
 		EncodedNormal(p_norm, Vector3(p_norm.z, -p_norm.x, p_norm.y).cross(p_norm.normalized()).normalized()) {}
 
@@ -109,64 +99,30 @@ struct [[nodiscard]] EncodedNormal {
 	_FORCE_INLINE_ EncodedNormal(real_t p_n_x, real_t p_n_y, real_t p_n_z, real_t p_t_x, real_t p_t_y, real_t p_t_z, real_t p_t_d = 1.0f) :
 		EncodedNormal(Vector3(p_n_x, p_n_y, p_n_z), Vector3(p_t_x, p_t_y, p_t_z), p_t_d) {}
 
-	// This is a "narrowing" conversion so must be explicit.
+	// This is a "widening" conversion so can be implicit.
+	// ReSharper disable once CppNonExplicitConversionOperator
 	/// Decodes and returns the normal part, discarding the tangent part.
-	_FORCE_INLINE_ explicit operator Vector3() const { return get_normal(); }
+	_FORCE_INLINE_ operator Vector3() const { return get_normal(); }
 
 	/// Sets the normal part, updating the tangent part to keep orthogonality.
-	_FORCE_INLINE_ EncodedNormal &operator=(const Vector3 &p_norm) {
-		set_normal(p_norm);
-		return *this;
-	}
+	_FORCE_INLINE_ void operator=(const Vector3 &p_norm) { set_normal(p_norm); }
 
 	_FORCE_INLINE_ EncodedNormal operator-() const;
 
 	_FORCE_INLINE_ bool operator!=(const EncodedNormal &p_rhs) const { return hash != p_rhs.hash; }
 	_FORCE_INLINE_ bool operator==(const EncodedNormal &p_rhs) const { return !operator!=(p_rhs); }
 
-	/// Mutates the normal part, updating the tangent part to keep orthogonality.
-	EncodedNormal &operator+=(const Vector3 &p_rhs);
-	/// Mutates the normal part, updating the tangent part to keep orthogonality.
-	EncodedNormal &operator-=(const Vector3 &p_rhs);
-	/// Mutates the normal part, updating the tangent part to keep orthogonality.
-	EncodedNormal &operator*=(const Vector3 &p_rhs);
-	/// Mutates the normal part, updating the tangent part to keep orthogonality.
-	EncodedNormal &operator/=(const Vector3 &p_rhs);
-	/// Mutates the normal part, updating the tangent part to keep orthogonality.
-	EncodedNormal &operator*=(real_t p_rhs);
-	/// Mutates the normal part, updating the tangent part to keep orthogonality.
-	EncodedNormal &operator/=(real_t p_rhs);
+	_FORCE_INLINE_ Vector3 operator+(const Vector3 &p_rhs) const { return get_normal() + p_rhs; }
+	_FORCE_INLINE_ Vector3 operator-(const Vector3 &p_rhs) const { return get_normal() - p_rhs; }
+	_FORCE_INLINE_ Vector3 operator*(const Vector3 &p_rhs) const { return get_normal() * p_rhs; }
+	_FORCE_INLINE_ Vector3 operator/(const Vector3 &p_rhs) const { return get_normal() / p_rhs; }
+	_FORCE_INLINE_ Vector3 operator*(real_t p_rhs) const { return get_normal() * p_rhs; }
+	_FORCE_INLINE_ Vector3 operator/(real_t p_rhs) const { return get_normal() / p_rhs; }
 
-	/// Returns a copy of the encoded normal-and-tangent vector, with its normal part mutated and tangent part updated to keep orthogonality.
-	EncodedNormal operator+(const Vector3 &p_rhs) const;
-	/// Returns a copy of the encoded normal-and-tangent vector, with its normal part mutated and tangent part updated to keep orthogonality.
-	EncodedNormal operator-(const Vector3 &p_rhs) const;
-	/// Returns a copy of the encoded normal-and-tangent vector, with its normal part mutated and tangent part updated to keep orthogonality.
-	EncodedNormal operator*(const Vector3 &p_rhs) const;
-	/// Returns a copy of the encoded normal-and-tangent vector, with its normal part mutated and tangent part updated to keep orthogonality.
-	EncodedNormal operator/(const Vector3 &p_rhs) const;
-	/// Returns a copy of the encoded normal-and-tangent vector, with its normal part mutated and tangent part updated to keep orthogonality.
-	EncodedNormal operator*(real_t p_rhs) const;
-	/// Returns a copy of the encoded normal-and-tangent vector, with its normal part mutated and tangent part updated to keep orthogonality.
-	EncodedNormal operator/(real_t p_rhs) const;
-
-	/// Mutates the normal part, updating the tangent part to keep orthogonality. The tangent part of the right operand is ignored.
-	_FORCE_INLINE_ EncodedNormal &operator+=(const EncodedNormal &p_rhs);
-	/// Mutates the normal part, updating the tangent part to keep orthogonality. The tangent part of the right operand is ignored.
-	_FORCE_INLINE_ EncodedNormal &operator-=(const EncodedNormal &p_rhs);
-	/// Mutates the normal part, updating the tangent part to keep orthogonality. The tangent part of the right operand is ignored.
-	_FORCE_INLINE_ EncodedNormal &operator*=(const EncodedNormal &p_rhs);
-	/// Mutates the normal part, updating the tangent part to keep orthogonality. The tangent part of the right operand is ignored.
-	_FORCE_INLINE_ EncodedNormal &operator/=(const EncodedNormal &p_rhs);
-
-	/// Returns a copy of the encoded normal-and-tangent vector, with its normal part mutated and tangent part updated to keep orthogonality. The tangent part of the right operand is ignored.
-	_FORCE_INLINE_ EncodedNormal operator+(const EncodedNormal &p_rhs) const;
-	/// Returns a copy of the encoded normal-and-tangent vector, with its normal part mutated and tangent part updated to keep orthogonality. The tangent part of the right operand is ignored.
-	_FORCE_INLINE_ EncodedNormal operator-(const EncodedNormal &p_rhs) const;
-	/// Returns a copy of the encoded normal-and-tangent vector, with its normal part mutated and tangent part updated to keep orthogonality. The tangent part of the right operand is ignored.
-	_FORCE_INLINE_ EncodedNormal operator*(const EncodedNormal &p_rhs) const;
-	/// Returns a copy of the encoded normal-and-tangent vector, with its normal part mutated and tangent part updated to keep orthogonality. The tangent part of the right operand is ignored.
-	_FORCE_INLINE_ EncodedNormal operator/(const EncodedNormal &p_rhs) const;
+	_FORCE_INLINE_ Vector3 operator+(const EncodedNormal &p_rhs) const { return operator+(p_rhs.get_normal()); }
+	_FORCE_INLINE_ Vector3 operator-(const EncodedNormal &p_rhs) const { return operator-(p_rhs.get_normal()); }
+	_FORCE_INLINE_ Vector3 operator*(const EncodedNormal &p_rhs) const { return operator*(p_rhs.get_normal()); }
+	_FORCE_INLINE_ Vector3 operator/(const EncodedNormal &p_rhs) const { return operator/(p_rhs.get_normal()); }
 
 	/// Returns a component (X, Y or Z) of the normal part.
 	_FORCE_INLINE_ real_t operator[](int p_axis) const {
@@ -195,6 +151,13 @@ struct [[nodiscard]] EncodedNormal {
 	/// Sets the tangent part without updating the normal part.
 	_FORCE_INLINE_ void set_tangent_only(const Vector3 &p_tan, real_t p_tan_dir = 1.0f);
 };
+
+EncodedNormal EncodedNormal::operator-() const {
+	const Vector3 norm = get_normal();
+	real_t tan_d;
+	const Vector3 tan = get_tangent(&tan_d);
+	return EncodedNormal(-norm, tan, -tan_d);
+}
 
 Vector3 EncodedNormal::get_normal() const {
 	return Vector3::octahedron_decode(Vector2(encoded_normal[0] / 65535.0f, encoded_normal[1] / 65535.0f));
@@ -234,39 +197,7 @@ void EncodedNormal::set_tangent_only(const Vector3 &p_tan, real_t p_tan_dir) {
 	}
 }
 
-EncodedNormal EncodedNormal::operator-() const {
-	const Vector3 norm = get_normal();
-	real_t tan_d;
-	const Vector3 tan = get_tangent(&tan_d);
-	return EncodedNormal(-norm, tan, -tan_d);
-}
-
-OMG_ENCODED_NORMAL_CAST_ASN_OP_IMPL(+=)
-OMG_ENCODED_NORMAL_CAST_ASN_OP_IMPL(-=)
-OMG_ENCODED_NORMAL_CAST_ASN_OP_IMPL(*=)
-OMG_ENCODED_NORMAL_CAST_ASN_OP_IMPL(/=)
-
-OMG_ENCODED_NORMAL_CAST_MATH_OP_IMPL(+)
-OMG_ENCODED_NORMAL_CAST_MATH_OP_IMPL(-)
-OMG_ENCODED_NORMAL_CAST_MATH_OP_IMPL(*)
-OMG_ENCODED_NORMAL_CAST_MATH_OP_IMPL(/)
-
-// OpenMesh type traits
-namespace OpenMesh {
-template <>
-struct vector_traits<::EncodedNormal> {
-	typedef ::EncodedNormal vector_type;
-	typedef real_t value_type;
-	typedef GenProg::Int2Type<vector_type::AXIS_COUNT> typed_size;
-	static const size_t size_ = vector_type::AXIS_COUNT;
-
-	static size_t size() { return size_; }
-};
-}
-
 #undef OMG_AXIS_WRITE_PROXY_ASN_OP_IMPL
 #undef OMG_AXIS_WRITE_PROXY_CMP_OP_IMPL
-#undef OMG_ENCODED_NORMAL_CAST_ASN_OP_IMPL
-#undef OMG_ENCODED_NORMAL_CAST_MATH_OP_IMPL
 
 #endif // OPENMESH_GODOT_KERNEL_ENCODED_NORMAL_H
