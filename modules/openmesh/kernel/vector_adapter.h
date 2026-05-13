@@ -4,6 +4,7 @@
 
 // OpenMesh
 #include "Core/Utils/vector_traits.hh"
+#include "Core/Utils/GenProg.hh"
 // Godot
 #include "core/typedefs.h"
 #include "core/math/vector2.h"
@@ -12,6 +13,7 @@
 #include "core/math/vector2i.h"
 #include "core/math/vector3i.h"
 #include "core/math/vector4i.h"
+#include "encoded_normal.h"
 // STL
 #include <iterator>
 #include <algorithm>
