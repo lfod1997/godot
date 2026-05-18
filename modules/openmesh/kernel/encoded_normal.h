@@ -15,9 +15,9 @@ struct [[nodiscard]] EncodedNormal {
 			uint16_t encoded_tangent[2];
 		};
 
-		uint64_t hash;
+		uint64_t hash = 0x80007fff7fff7fff; // Positive Z unit
 
-		uint8_t data[8] = { 0 };
+		uint8_t data[8];
 	};
 
 	_FORCE_INLINE_ constexpr EncodedNormal() = default;
@@ -83,9 +83,7 @@ Vector3 EncodedNormal::get_tangent(real_t *r_sign) const {
 
 Vector4 EncodedNormal::get_tangent() const {
 	Vector4 res;
-	reinterpret_cast<Vector3&>(res) = Vector3::octahedron_tangent_decode(
-		Vector2(encoded_tangent[0] / 65535.0f, encoded_tangent[1] / 65535.0f), &res.w
-	);
+	reinterpret_cast<Vector3&>(res) = get_tangent(&res.w);
 	return res;
 }
 
