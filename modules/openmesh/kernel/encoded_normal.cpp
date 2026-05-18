@@ -49,16 +49,3 @@ void EncodedNormal::set_tangent(const Vector3 &p_tan, real_t p_tan_dir) {
 		set_tangent_only(p_tan, p_tan_dir);
 	}
 }
-
-// FIXME: test code
-void static_test() {
-	EncodedNormal n { 1.0, 0.0, 0.0 };
-	n = Vector3(0, 1, 0) + n;
-	n[0] = -n[0];
-	if (n[0] > n[1]) {}
-	EncodedNormal n2 = (n + n + n) / 3;
-	n = n2 * Vector3(-1, -1, -1);
-
-	(void) n;
-	(void) n2;
-}

@@ -6,66 +6,9 @@
 #include "core/math/vector2.h"
 #include "core/math/vector3.h"
 #include "core/math/vector4.h"
-// OpenMesh
-#include "Core/Utils/vector_traits.hh"
-#include "Core/Utils/GenProg.hh"
-
-#define OMG_AXIS_WRITE_PROXY_ASN_OP_IMPL(op) \
-	_FORCE_INLINE_ real_t operator op (real_t value) { \
-		ERR_FAIL_COND_V(!target, 0.0f); \
-		Vector3 n = target->get_normal(); \
-		n[axis] op value; \
-		target->set_normal(n); \
-		return value; \
-	}
-
-#define OMG_AXIS_WRITE_PROXY_CMP_OP_IMPL(op, eq) \
-	_FORCE_INLINE_ bool operator op (const AxisWriteProxy &p_rhs) const { \
-		ERR_FAIL_COND_V(!target || !p_rhs.target, false); \
-		if (target == p_rhs.target) { \
-			if (unlikely(axis == p_rhs.axis)) { return eq; } \
-			Vector3 n = target->get_normal(); \
-			return n[axis] op n[p_rhs.axis]; \
-		} \
-		else { return real_t(*this) op real_t(p_rhs); } \
-	}
 
 /// Octahedron-encoded, normalized, normal-and-tangent vector type. Each component is 16-bit fixed precision, sizeof: 8 Bytes.
 struct [[nodiscard]] EncodedNormal {
-	class [[nodiscard]] AxisWriteProxy {
-		friend struct EncodedNormal;
-
-		EncodedNormal *target = nullptr;
-		int axis = -1;
-
-		_FORCE_INLINE_ AxisWriteProxy() = default;
-		_FORCE_INLINE_ AxisWriteProxy(EncodedNormal *p_target, int p_axis) :
-			target(p_target), axis(p_axis) {}
-
-	public:
-		// ReSharper disable once CppNonExplicitConversionOperator
-		_FORCE_INLINE_ operator real_t() const { return target->get_normal()[axis]; }
-		_FORCE_INLINE_ real_t operator-() const { return -operator real_t(); }
-		_FORCE_INLINE_ real_t operator+() const { return operator real_t(); }
-
-		OMG_AXIS_WRITE_PROXY_ASN_OP_IMPL(=)
-
-		OMG_AXIS_WRITE_PROXY_CMP_OP_IMPL(!=, false)
-		OMG_AXIS_WRITE_PROXY_CMP_OP_IMPL(==, true)
-		OMG_AXIS_WRITE_PROXY_CMP_OP_IMPL(<, false)
-		OMG_AXIS_WRITE_PROXY_CMP_OP_IMPL(<=, true)
-		OMG_AXIS_WRITE_PROXY_CMP_OP_IMPL(>, false)
-		OMG_AXIS_WRITE_PROXY_CMP_OP_IMPL(>=, true)
-	};
-
-	static const int AXIS_COUNT = 3;
-
-	enum Axis {
-		AXIS_X,
-		AXIS_Y,
-		AXIS_Z,
-	};
-
 	union {
 		struct {
 			uint16_t encoded_normal[2];
@@ -85,9 +28,7 @@ struct [[nodiscard]] EncodedNormal {
 		set_tangent_only(p_tan, p_tan_dir);
 	}
 
-	// This is a "narrowing" conversion (normalization is enforced upon decoding) so ideally should not be explicit.
-	// But in order to drop-in replace raw vector types it needs to be implicit so we choose to error at unnormalized "p_norm".
-	_FORCE_INLINE_ EncodedNormal(const Vector3 &p_norm) :
+	_FORCE_INLINE_ explicit EncodedNormal(const Vector3 &p_norm) :
 		EncodedNormal(p_norm, Vector3(p_norm.z, -p_norm.x, p_norm.y).cross(p_norm.normalized()).normalized()) {}
 
 	_FORCE_INLINE_ EncodedNormal(const Vector3 &p_norm, const Vector4 &p_tan) :
@@ -99,42 +40,13 @@ struct [[nodiscard]] EncodedNormal {
 	_FORCE_INLINE_ EncodedNormal(real_t p_n_x, real_t p_n_y, real_t p_n_z, real_t p_t_x, real_t p_t_y, real_t p_t_z, real_t p_t_d = 1.0f) :
 		EncodedNormal(Vector3(p_n_x, p_n_y, p_n_z), Vector3(p_t_x, p_t_y, p_t_z), p_t_d) {}
 
-	// This is a "widening" conversion so can be implicit.
-	// ReSharper disable once CppNonExplicitConversionOperator
 	/// Decodes and returns the normal part, discarding the tangent part.
-	_FORCE_INLINE_ operator Vector3() const { return get_normal(); }
-
-	/// Sets the normal part, updating the tangent part to keep orthogonality.
-	_FORCE_INLINE_ void operator=(const Vector3 &p_norm) { set_normal(p_norm); }
+	_FORCE_INLINE_ explicit operator Vector3() const { return get_normal(); }
 
 	_FORCE_INLINE_ EncodedNormal operator-() const;
 
 	_FORCE_INLINE_ bool operator!=(const EncodedNormal &p_rhs) const { return hash != p_rhs.hash; }
 	_FORCE_INLINE_ bool operator==(const EncodedNormal &p_rhs) const { return !operator!=(p_rhs); }
-
-	_FORCE_INLINE_ Vector3 operator+(const Vector3 &p_rhs) const { return get_normal() + p_rhs; }
-	_FORCE_INLINE_ Vector3 operator-(const Vector3 &p_rhs) const { return get_normal() - p_rhs; }
-	_FORCE_INLINE_ Vector3 operator*(const Vector3 &p_rhs) const { return get_normal() * p_rhs; }
-	_FORCE_INLINE_ Vector3 operator/(const Vector3 &p_rhs) const { return get_normal() / p_rhs; }
-	_FORCE_INLINE_ Vector3 operator*(real_t p_rhs) const { return get_normal() * p_rhs; }
-	_FORCE_INLINE_ Vector3 operator/(real_t p_rhs) const { return get_normal() / p_rhs; }
-
-	_FORCE_INLINE_ Vector3 operator+(const EncodedNormal &p_rhs) const { return operator+(p_rhs.get_normal()); }
-	_FORCE_INLINE_ Vector3 operator-(const EncodedNormal &p_rhs) const { return operator-(p_rhs.get_normal()); }
-	_FORCE_INLINE_ Vector3 operator*(const EncodedNormal &p_rhs) const { return operator*(p_rhs.get_normal()); }
-	_FORCE_INLINE_ Vector3 operator/(const EncodedNormal &p_rhs) const { return operator/(p_rhs.get_normal()); }
-
-	/// Returns a component (X, Y or Z) of the normal part.
-	_FORCE_INLINE_ real_t operator[](int p_axis) const {
-		ERR_FAIL_INDEX_V(p_axis, AXIS_COUNT, 0.0f);
-		return get_normal()[p_axis];
-	}
-
-	/// Returns a component (X, Y or Z) of the normal part.
-	_FORCE_INLINE_ AxisWriteProxy operator[](int p_axis) {
-		ERR_FAIL_INDEX_V(p_axis, AXIS_COUNT, AxisWriteProxy());
-		return AxisWriteProxy(this, p_axis);
-	}
 
 	/// Decodes and returns the normal part.
 	_FORCE_INLINE_ Vector3 get_normal() const;
@@ -196,8 +108,5 @@ void EncodedNormal::set_tangent_only(const Vector3 &p_tan, real_t p_tan_dir) {
 		encoded_tangent[0] = 65535;
 	}
 }
-
-#undef OMG_AXIS_WRITE_PROXY_ASN_OP_IMPL
-#undef OMG_AXIS_WRITE_PROXY_CMP_OP_IMPL
 
 #endif // OPENMESH_GODOT_KERNEL_ENCODED_NORMAL_H

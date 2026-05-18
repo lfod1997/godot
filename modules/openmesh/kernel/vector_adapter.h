@@ -13,7 +13,6 @@
 #include "core/math/vector2i.h"
 #include "core/math/vector3i.h"
 #include "core/math/vector4i.h"
-#include "encoded_normal.h"
 // STL
 #include <iterator>
 #include <algorithm>
