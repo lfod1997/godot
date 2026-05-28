@@ -512,7 +512,7 @@ public:
    */
   void reset_status() {
       PropertyT<StatusInfo> &status_prop = property(vertex_status_);
-      PropertyT<StatusInfo>::vector_type &sprop_v = status_prop.data_vector();
+      PropertyT<StatusInfo>::vector_type &sprop_v = status_prop.data_vector(); // FIXME: Adapt to shared prop
       std::fill(sprop_v.begin(), sprop_v.begin() + n_vertices(), StatusInfo());
   }
 

@@ -63,7 +63,7 @@
 #include <algorithm>
 #include <iosfwd>
 // --------------------
-#include "Core/Utils/PropertyContainer.hh"
+#include "Core/Utils/SharedPropertyContainerT.hh"
 
 
 //== NAMESPACES ===============================================================
@@ -809,11 +809,11 @@ public:
 
 private:
 
-  PropertyContainer  vprops_;
-  PropertyContainer  hprops_;
-  PropertyContainer  eprops_;
-  PropertyContainer  fprops_;
-  PropertyContainer  mprops_;
+  SharedPropertyContainerT<VertexDomain>  vprops_;
+  SharedPropertyContainerT<HalfedgeDomain>  hprops_;
+  SharedPropertyContainerT<EdgeDomain>  eprops_;
+  SharedPropertyContainerT<FaceDomain>  fprops_;
+  SharedPropertyContainerT<MeshDomain>  mprops_;
 };
 
 

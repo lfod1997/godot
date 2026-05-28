@@ -94,10 +94,10 @@ class PropertyT : public BaseProperty
 public:
 
   typedef T                                       Value;
-  typedef std::vector<T>                          vector_type;
+  typedef std::vector<T>                          vector_type; // Only used in ArrayKernel
   typedef T                                       value_type;
-  typedef typename vector_type::reference         reference;
-  typedef typename vector_type::const_reference   const_reference;
+  typedef typename vector_type::reference         reference; // value_type&
+  typedef typename vector_type::const_reference   const_reference; // const value_type&
 
 public:
 
