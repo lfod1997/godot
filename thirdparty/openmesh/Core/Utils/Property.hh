@@ -160,15 +160,6 @@ public:
 
 public: // data access interface
 
-  /// Get pointer to array (does not work for T==bool)
-  const T* data() const {
-
-    if( data_.empty() )
-      return 0;
-
-    return &data_[0];
-  }
-
   /// Get reference to property vector (be careful, improper usage, e.g. resizing, may crash OpenMesh!!!)
   vector_type& data_vector() {
     return data_;

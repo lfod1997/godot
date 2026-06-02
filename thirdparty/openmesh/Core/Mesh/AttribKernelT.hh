@@ -52,6 +52,8 @@
 #include "Core/Utils/vector_traits.hh"
 #include <vector>
 #include <algorithm>
+// Godot
+#include "core/error/error_macros.h"
 
 //== NAMESPACES ===============================================================
 
@@ -259,7 +261,7 @@ public:
   //-------------------------------------------------------------------- points
 
   const Point* points() const
-  { return this->property(points_).data(); }
+  { ERR_FAIL_V_MSG(nullptr, "Accessing raw pointer of mesh property is prohibited."); }
 
   const Point& point(VertexHandle _vh) const
   { return this->property(points_, _vh); }
@@ -277,7 +279,7 @@ public:
   //------------------------------------------------------------ vertex normals
 
   const Normal* vertex_normals() const
-  { return this->property(vertex_normals_).data(); }
+  { ERR_FAIL_V_MSG(nullptr, "Accessing raw pointer of mesh property is prohibited."); }
 
   const Normal& normal(VertexHandle _vh) const
   { return this->property(vertex_normals_, _vh); }
@@ -289,7 +291,7 @@ public:
   //------------------------------------------------------------- vertex colors
 
   const Color* vertex_colors() const
-  { return this->property(vertex_colors_).data(); }
+  { ERR_FAIL_V_MSG(nullptr, "Accessing raw pointer of mesh property is prohibited."); }
 
   const Color& color(VertexHandle _vh) const
   { return this->property(vertex_colors_, _vh); }
@@ -301,7 +303,7 @@ public:
   //------------------------------------------------------- vertex 1D texcoords
 
   const TexCoord1D* texcoords1D() const {
-    return this->property(vertex_texcoords1D_).data();
+    ERR_FAIL_V_MSG(nullptr, "Accessing raw pointer of mesh property is prohibited.");
   }
 
   const TexCoord1D& texcoord1D(VertexHandle _vh) const {
@@ -316,7 +318,7 @@ public:
   //------------------------------------------------------- vertex 2D texcoords
 
   const TexCoord2D* texcoords2D() const {
-    return this->property(vertex_texcoords2D_).data();
+    ERR_FAIL_V_MSG(nullptr, "Accessing raw pointer of mesh property is prohibited.");
   }
 
   const TexCoord2D& texcoord2D(VertexHandle _vh) const {
@@ -331,7 +333,7 @@ public:
   //------------------------------------------------------- vertex 3D texcoords
 
   const TexCoord3D* texcoords3D() const {
-    return this->property(vertex_texcoords3D_).data();
+    ERR_FAIL_V_MSG(nullptr, "Accessing raw pointer of mesh property is prohibited.");
   }
 
   const TexCoord3D& texcoord3D(VertexHandle _vh) const {
@@ -345,7 +347,7 @@ public:
   //.------------------------------------------------------ halfedge 1D texcoords
 
   const TexCoord1D* htexcoords1D() const {
-    return this->property(halfedge_texcoords1D_).data();
+    ERR_FAIL_V_MSG(nullptr, "Accessing raw pointer of mesh property is prohibited.");
   }
 
   const TexCoord1D& texcoord1D(HalfedgeHandle _heh) const {
@@ -360,7 +362,7 @@ public:
   //------------------------------------------------------- halfedge 2D texcoords
 
   const TexCoord2D* htexcoords2D() const {
-    return this->property(halfedge_texcoords2D_).data();
+    ERR_FAIL_V_MSG(nullptr, "Accessing raw pointer of mesh property is prohibited.");
   }
 
   const TexCoord2D& texcoord2D(HalfedgeHandle _heh) const {
@@ -375,7 +377,7 @@ public:
   //------------------------------------------------------- halfedge 3D texcoords
 
   const TexCoord3D* htexcoords3D() const {
-    return this->property(halfedge_texcoords3D_).data();
+    ERR_FAIL_V_MSG(nullptr, "Accessing raw pointer of mesh property is prohibited.");
   }
 
   const TexCoord3D& texcoord3D(HalfedgeHandle _heh) const {
@@ -389,7 +391,7 @@ public:
   //------------------------------------------------------------- edge colors
 
   const Color* edge_colors() const
-  { return this->property(edge_colors_).data(); }
+  { ERR_FAIL_V_MSG(nullptr, "Accessing raw pointer of mesh property is prohibited."); }
 
   const Color& color(EdgeHandle _eh) const
   { return this->property(edge_colors_, _eh); }
@@ -410,7 +412,7 @@ public:
   //------------------------------------------------------------- halfedge colors
 
   const Color* halfedge_colors() const
-  { return this->property(halfedge_colors_).data(); }
+  { ERR_FAIL_V_MSG(nullptr, "Accessing raw pointer of mesh property is prohibited."); }
 
   const Color& color(HalfedgeHandle _heh) const
   { return this->property(halfedge_colors_, _heh); }
